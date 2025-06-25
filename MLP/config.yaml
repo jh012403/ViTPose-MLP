@@ -1,0 +1,19 @@
+# config.yaml
+seed: 42
+
+data_path: ViTPose-Cus/data/mpi_inf_3dhp/mpi_coco15.npz
+save_path: ViTPose-Cus/MLP/checkpoints/7st/7st.pth
+log_dir: ViTPose-Cus/MLP/runs/mlp_log/7st/
+
+train_split: 0.8
+batch_size: 128          # per GPU (Total = 64 x 3 = 192)
+epochs: 300
+lr: 0.0002
+warmup_epochs: 10            # = 5e-4
+
+scheduler:
+  type: reduce_on_plateau
+  factor: 0.5
+  patience: 10
+  threshold: 1e-4
+  min_lr: 1e-8
