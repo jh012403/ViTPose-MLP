@@ -1,85 +1,86 @@
-<<<<<<< HEAD
-# ViTPose-MLP
-=======
+-----
+
 # 🧠 2D-to-3D Human Pose Estimation Pipeline
 
-이 프로젝트는 단일 RGB 이미지를 입력으로 받아 2D keypoint를 추출하고, 이를 기반으로 3D 자세를 추론하는 **경량화된 포즈 추정 파이프라인**입니다.  
-전체 파이프라인은 ViTPose 기반의 2D 포즈 추정기와, SE-Residual Block을 도입한 MLP 기반 3D 회귀기로 구성되어 있습니다.
+This project is a **lightweight pose estimation pipeline** that takes a single RGB image as input, extracts 2D keypoints, and infers a 3D pose based on them.
+The entire pipeline consists of a ViTPose-based 2D pose estimator and an MLP-based 3D regressor incorporating SE-Residual Blocks.
 
----
+-----
 
-## 🔁 전체 파이프라인 개요
+## 🔁 Pipeline Overview
 
 ```text
-RGB 이미지
+RGB Image
    ↓
 [ViTPose]
    ↓             (COCO17 keypoints)
-[COCO15 변환 및 정규화]
+[COCO15 Conversion & Normalization]
    ↓             (COCO15 keypoints)
-[MLP 회귀기]
+[MLP Regressor]
    ↓
-3D Pose 추정 결과 (15 × 3)
+3D Pose Estimation Result (15 × 3)
 ```
 
----
+-----
 
-## 📁 디렉토리 구성
+## 📁 Directory Structure
 
 ```
 project-root/
-├── ViTPose/                 # ViTPose 기반 2D keypoint 추론 및 변환
+├── ViTPose/                 # ViTPose-based 2D keypoint inference and conversion
 │   ├── Model/
 │   ├── COCO15_convert/
 │   ├── pretrained/checkpoints/
 │   └── README.md
 │
-├── MLP/                     # SE-Residual 기반 MLP 3D 회귀기
+├── MLP/                     # SE-Residual based MLP 3D regressor
 │   ├── model.py
 │   └── README.md
 │
-├── dataset/                 # 학습 및 추론용 데이터셋 정보 및 전처리 결과
+├── dataset/                 # Dataset info for training/inference and preprocessing results
 │   └── README.md
 │
-├── requirements.txt         # (선택사항) 전체 환경 구성 파일
-└── README.md                # (본 문서)
+├── requirements.txt         # (Optional) Full environment configuration file
+└── README.md                # (This document)
 ```
 
----
+-----
 
-## 🧩 구성 요소 설명
+## 🧩 Component Description
 
 ### 🔹 ViTPose
-- [MMPose](https://github.com/open-mmlab/mmpose) 기반의 2D 포즈 추정기
-- COCO17 포맷 keypoints를 추론
-- 후처리로 MPI-style COCO15 포맷으로 변환 및 정규화
 
-### 🔹 COCO15 변환기
-- ViTPose의 출력(COCO17)을 기반으로 neck, spine, head_top 등을 보간하여 COCO15 포맷 구성
-- 이미지 해상도 기반 정규화 수행
+  - [MMPose](https://github.com/open-mmlab/mmpose) based 2D pose estimator.
+  - Infers keypoints in COCO17 format.
+  - Post-processing includes conversion to MPI-style COCO15 format and normalization.
+
+### 🔹 COCO15 Converter
+
+  - Constructs COCO15 format by interpolating points such as the neck, spine, and head\_top based on ViTPose output (COCO17).
+  - Performs normalization based on image resolution.
 
 ### 🔹 MLP (3D Pose Regressor)
-- 입력: 15개 관절의 2D keypoints (정규화된 30차원 벡터)
-- 출력: 3D keypoints (45차원)
-- 구조: SEBlock + Residual 연결이 포함된 MLP 아키텍처
-- 경량성과 정확도를 모두 고려한 구조
 
----
+  - **Input:** 2D keypoints of 15 joints (Normalized 30-dimensional vector).
+  - **Output:** 3D keypoints (45-dimensional).
+  - **Structure:** MLP architecture incorporating SEBlock + Residual connections.
+  - Designed to balance lightweight structure with accuracy.
 
-## 📦 데이터셋 구성
+-----
 
-- **2D 추론용 입력**: MPI-INF-3DHP의 RGB 이미지
-- **학습/테스트 구분**:
-  - 학습: S1 ~ S4
-  - 테스트: S5 ~ S7
-- **2D Keypoint 추론**: ViTPose + COCO15 변환기
-- **MLP 학습 입력**: 정규화된 `.npz` 파일 (15×2 keypoints → 중심 정렬, 어깨 스케일, [-1, 1] 정규화)
+## 📦 Dataset Configuration
 
----
+  - **Input for 2D Inference:** RGB images from MPI-INF-3DHP.
+  - **Train/Test Split:**
+      - Train: S1 \~ S4
+      - Test: S5 \~ S7
+  - **2D Keypoint Inference:** ViTPose + COCO15 Converter.
+  - **MLP Training Input:** Normalized `.npz` files (15×2 keypoints → Center alignment, Shoulder scaling, [-1, 1] normalization).
 
-## 📝 참고 사항
+-----
 
-- 본 프로젝트는 단일 이미지 기반 3D 자세 추정을 경량화된 구조로 구현한 데 목적이 있습니다.
-- ViTPose는 사전학습 모델(`.pth`)을 활용하며, 추론은 MMPose API를 기반으로 수행됩니다.
-- MLP 구조는 기존 바닐라 MLP에 비해 성능 향상을 위해 **SEBlock**, **Residual**, **GELU** 등을 결합한 구조입니다.
->>>>>>> b7d598a (Initial commit)
+## 📝 Notes
+
+  - The goal of this project is to implement 3D pose estimation based on a single image using a lightweight structure.
+  - ViTPose utilizes pretrained models (`.pth`), and inference is performed based on the MMPose API.
+  - The MLP structure combines **SEBlock**, **Residual**, and **GELU** to improve performance compared to standard Vanilla MLPs.
