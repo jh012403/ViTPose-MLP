@@ -1,6 +1,6 @@
 -----
 
-# 🧠 2D-to-3D Human Pose Estimation Pipeline
+# 🅯 2D-to-3D Human Pose Estimation Pipeline
 
 This project is a **lightweight pose estimation pipeline** that takes a single RGB image as input, extracts 2D keypoints, and infers a 3D pose based on them.
 The entire pipeline consists of a ViTPose-based 2D pose estimator and an MLP-based 3D regressor incorporating SE-Residual Blocks.
