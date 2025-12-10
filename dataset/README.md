@@ -1,37 +1,48 @@
-# 📁 Dataset 구성 및 설명
+## Dataset Organization
 
-본 프로젝트에서 사용된 데이터셋은 2D 및 3D 포즈 추정 파이프라인에 맞게 다음과 같이 구성됩니다.
+This project utilizes a curated dataset pipeline optimized for 2D and 3D pose estimation tasks. The data preparation process involves utilizing standard benchmarks for backbone training and specific regression tasks, with a focus on format consistency across different domains.
+
+### Source Datasets
+
+#### MPI-INF-3DHP
+- **Role**: Primary dataset for training and evaluating the **MLP-based 3D Regression Network**.
+- **Protocol & Splits**:
+  - **Training Set**: Subjects `S1`, `S2`, `S3`, `S4`
+  - **Test Set**: Subjects `S5`, `S6`, `S7`
+- **Preprocessing Pipeline**:
+  1. **Frame Extraction**: RGB frames are extracted from the source video sequences.
+  2. **2D Inference**: Keypoint inference is performed using **ViTPose**.
+  3. **Serialization**: Inferred keypoints are mapped to the **COCO-15** format and serialized into `.npz` files for efficient loading.
+
+#### COCO17
+- **Role**: Source dataset for training the 2D pose estimator (**ViTPose**).
+- **Specification**: Follows the standard 17-keypoint COCO topology.
+- **Keypoint Adaptation**:
+  - To ensure compatibility with the MPI-INF-3DHP topology, we employ a **Keypoint Adapter (COCO17 → COCO15)**.
+  - This process reduces the standard 17 joints to a 15-joint subset, aligning the input dimension for the subsequent 3D lifting stage.
 
 ---
 
-## 📌 사용된 원천 데이터셋
+### Data Generation Pipeline
 
-### 🔹 MPI-INF-3DHP
-- **사용 용도**: MLP 기반 3D 회귀 모델 학습 및 테스트
-- **사용 구분**:
-  - 학습용: `S1`, `S2`, `S3`, `S4`
-  - 테스트용: `S5`, `S6`, `S7`
-- **처리 과정**:
-  - RGB 영상 프레임을 추출하여 ViTPose를 통해 2D keypoint 추론 수행
-  - 추론 결과는 COCO15 포맷으로 변환 후 `.npz` 형태로 저장
-
-### 🔹 COCO17
-- **사용 용도**: ViTPose 학습 데이터셋
-- **포맷 정보**: 17개 관절 포인트 (COCO keypoint standard)
-- **변환**:
-  - 본 프로젝트에서는 MPI 포맷 호환을 위해 `COCO17 → COCO15` 변환기를 사용하여 15개 관절로 구성된 포맷으로 일괄 변환
-
----
-
-## 🔄 데이터 생성 흐름 요약
+The overall data flow—from the 2D backbone pre-training to the final 3D regression input preparation—is summarized below:
 
 ```text
-COCO17 (ViTPose 학습용)
-          ↓
-   COCO15 변환기
-          ↓
-MPI-INF-3DHP 영상 → ViTPose 추론 → 2D keypoint(COCO15)
-          ↓
-   정규화 및 전처리 (.npz 저장)
-          ↓
-  MLP 학습용 입력 데이터로 활용
+[ Data Processing Workflow ]
+
+1. Backbone Training
+   Dataset: COCO17 (17 Keypoints)
+      ↓
+   Model: ViTPose (Pre-trained Weights)
+
+2. Inference & Adaptation
+   Input: MPI-INF-3DHP (RGB Images)
+      ↓
+   Inference: ViTPose estimates 2D poses
+      ↓
+   Adaptation: Keypoint Mapping (COCO17 → COCO15)
+      ↓
+   Preprocessing: Normalization & Serialization (.npz)
+      ↓
+   Target: Input features for MLP 3D Regression Training
+```
